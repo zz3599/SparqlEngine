@@ -1,0 +1,12 @@
+SELECT DISTINCT ?product ?label
+WHERE{
+	?product rdfs:label ?label .
+	?product rdf:type %ProductType% .
+	?product bsbm:productFeature %ProductFeature1% .
+	?product bsbm:productFeature %ProductFeature2% .
+	?product bsbm:productPropertyNumeric1 ?value1 .
+	FILTER (?value1 > %x% )
+	OPTIONAL {%ProductXYZ% bsbm:productPropertyTextual4 ?propertyTextual4 .}
+ }
+ORDER BY ?label
+LIMIT 10

@@ -1,0 +1,17 @@
+SELECT ?product ?label
+WHERE {
+	?product rdfs:label ?label .
+	?product rdf:type %ProductType% .
+	?product bsbm:productFeature %ProductFeature1% .
+	?product bsbm:productPropertyNumeric1 ?p1 .
+	FILTER ( ?p1 > %x% )
+	?product bsbm:productPropertyNumeric3 ?p3 .
+	FILTER (?p3 < %y% )
+	OPTIONAL {
+		?product bsbm:productFeature %ProductFeature2% .
+		?product rdfs:label ?testVar . 
+	}
+	FILTER ( !bound(?testVar ) ) 
+}
+ORDER BY ?label
+LIMIT 10

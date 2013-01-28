@@ -1,0 +1,17 @@
+SELECT DISTINCT ?product ?productLabel
+WHERE {
+	?product rdfs:label ?productLabel .
+	%ProductXYZ% rdf:type ?prodtype .
+	?product rdf:type ?prodtype .
+	FILTER (%ProductXYZ% != ?product )
+	%ProductXYZ% bsbm:productFeature ?prodFeature .
+	?product bsbm:productFeature ?prodFeature .
+	%ProductXYZ% bsbm:productPropertyNumeric1 ?origProperty1 .
+	?product bsbm:productPropertyNumeric1 ?simProperty1 .
+	FILTER (?simProperty1 < (?origProperty1 + 150) && ?simProperty1 > (?origProperty1 - 150 ) )
+	%ProductXYZ% bsbm:productPropertyNumeric2 ?origProperty2 .
+	?product bsbm:productPropertyNumeric2 ?simProperty2 .
+	FILTER(?simProperty2 < (?origProperty2 + 220) && ?simProperty2 > (?origProperty2 - 220))
+}
+ORDER BY ?productLabel
+LIMIT 5

@@ -1,0 +1,18 @@
+SELECT ?product ?label
+	WHERE {
+	{ ?product rdfs:label ?label .
+	?product rdf:type %ProductType% .
+	?product bsbm:productFeature %ProductFeature1% .
+	?product bsbm:productFeature %ProductFeature2% .
+	?product bsbm:productPropertyNumeric1 ?p1 .
+	FILTER ( ?p1>%x% )
+	} UNION {
+	?product rdfs:label ?label .
+	?product rdf:type %ProductType% .
+	?product bsbm:productFeature %ProductFeature1% .
+	?product bsbm:productFeature %ProductFeature3% .
+	?product bsbm:productPropertyNumeric2 ?p2 .
+	FILTER ( ?p2 > %y% ) }
+}
+ORDER BY ?label
+LIMIT 10 OFFSET 10
