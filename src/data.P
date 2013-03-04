@@ -1,0 +1,3 @@
+regex(Value, Expression) :- 
+	     pcre:match(Expression, Value, MatchList, one),
+	     MatchList \== [].
