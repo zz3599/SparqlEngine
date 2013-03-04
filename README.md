@@ -4,6 +4,19 @@ REQUIREMENTS
 =====
 Python 2.7 or higher (but not 3.x)
 
+XSB Prolog
+
+XSB Prolog Setup
+=====
+$XSB_HOME is XSB root folder.
+
+`cd $XSB_HOME/build`
+
+`./configure -enable-FEATURE` 
+
+`./makexsb`
+
+
 HOW TO USE
 =====
 python sparqlparser.py [inputfile]
@@ -11,11 +24,13 @@ python sparqlparser.py [inputfile]
 OUTPUT
 =====
 An outputfile by the name of [inputfile].P will be created in the same location as the program.
-The query/1 predicate will produce be the literal translation of the SPARQL query. The predicates  
+The query/1 predicate will produce be the literal translation of the SPARQL query. 
 
 DEMO
 =====
-Try any of the q[.] files in this directory .
+Try any of the test/q[0-6] files
+
+
 
 LIMITATIONS
 ====

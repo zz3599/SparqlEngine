@@ -1,0 +1,50 @@
+prefix("bsbm-inst:", "<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>").
+prefix("bsbm:", "<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>").
+prefix("rdfs:", "<http://www.w3.org/2000/01/rdf-schema#>").
+prefix("rdf:", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#>").
+result1(?product,?label) :- 
+	rdf3(?product, rdfs:label, ?label),
+	rdf3(?product, rdf:type, %ProductType%),
+	rdf3(?product, bsbm:productFeature, %ProductFeature1%),
+	rdf3(?product, bsbm:productFeature, %ProductFeature2%),
+	rdf3(?product, bsbm:productPropertyNumeric1, ?p1),
+	pcre:match("%word1%|%word2%|%word3%", ?label, Matchlist, 'one'), Matchlist \==[],
+	FilterRight0 is ?origProperty2+220, ?simProperty2 == FilterRight0,
+	FilterRight1 is ?origProperty2-150, ?simProperty2 > FilterRight1,
+	rdf3(?product, bsbm:productPropertyNumeric1, ?p1),
+	FilterRight2 is ?product, %ProductXYZ% =\= FilterRight2,
+	var(?testVar),
+	(rdf3(?product, bsbm:productFeature, %ProductFeature2%); not rdf3(?product, bsbm:productFeature, %ProductFeature2%)),
+	(rdf3(?product, rdfs:label, ?testVar); not rdf3(?product, rdfs:label, ?testVar)),
+	FilterRight3 is ?origProperty1+150, ?simProperty1 < FilterRight3,
+	FilterRight4 is ?origProperty1-150, ?simProperty1 > FilterRight4,
+	FilterRight5 is %x%, ?value1 > FilterRight5,
+	FilterRight6 is ?origProperty2+220, ?simProperty2 < FilterRight6,
+	FilterRight7 is ?origProperty2-220, ?simProperty2 > FilterRight7.
+
+
+result2(?product,?label) :- 
+	rdf3(?product, rdfs:label, ?label),
+	rdf3(?product, rdf:type, %ProductType%),
+	rdf3(?product, bsbm:productFeature, %ProductFeature1%),
+	rdf3(?product, bsbm:productFeature, %ProductFeature3%),
+	rdf3(?product, bsbm:productPropertyNumeric2, ?p2).
+
+orderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, 1, OrderedBag).
+
+
+limit(_, Count, Count, Result) :- Result = [].
+limit([], _, _, Result) :- Result = [].
+limit([H|T], Counter, Limit, Result):-
+    Counter < Limit, 
+    Counter2 is Counter + 1,
+    limit(T, Counter2, Limit, Result2),
+    Result = [H|Result2]. 
+
+query(FinalBag):-
+	setof(query_intermediate(?product,?label), query_intermediate(?product,?label), ResultIntermediate),
+	orderby(ResultIntermediate, OrderedResult),
+	limit(OrderedResult, 0, 10, LimitResult),
+	FinalBag = LimitResult.
+
+query_intermediate(?product,?label):- result1(?product,?label); result2(?product,?label).

@@ -1,5 +1,6 @@
 import sys
 import tpg
+import os
 import re
 
 # Translates from SPARQL queries to Prolog predicates. 
@@ -298,10 +299,12 @@ try:
     print('---------------TRANSLATION-----------------------------------------')
     
     translation = entirequery.translate()
-    outfile = sys.argv[1].split('.')[0] + ".P"
+    outfile = os.path.basename(sys.argv[1]) + ".P"
     f = open(outfile, 'w+')
     f.write(translation)
-    print(entirequery.translate())
+    print(translation)
+    print outfile
+    f.close()
 
 except tpg.Error:
     print('Parsing Error')
