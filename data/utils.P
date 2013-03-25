@@ -1,0 +1,170 @@
+% -*- Mode: Prolog -*-
+% Useful utilities for prolog 
+
+close_enough(X,X) :- ! .
+close_enough(X,Y) :- X < Y, Y-X < 0.0001.
+close_enough(X,Y) :- Y < X, close_enough(Y,X).
+
+real_sqrt(X,Y) :- X >= 0.0, R is sqrt(X), close_enough(R,Y).
+real_sqrt(X,none) :- X < 0.0.
+
+third_element([_,_,C|_], C).
+
+member(X, [X|_]).
+member(X, [_|Rest]) :- member(X, Rest).
+
+% list_length(List, Length)
+list_length([], 0).
+list_length([_|Rest], Length) :- list_length(Rest, RestLength), Length is RestLength+1.
+
+swap_first_two([A,B|C], [B,A|C]).
+
+% count_occurrences(Element, List, Number) :- Stores the number of times E appears in List in Number
+count_occurrences(_, [], 0).
+count_occurrences(X, [X|Rest], N) :- count_occurrences(X, Rest, N1), N is N1+1.
+count_occurrences(X, [Y|Rest], N) :- X \== Y, count_occurrences(X, Rest, N).
+
+% lastelement(List, Last) :- Unifies Last to the last element of List
+lastelement([A],A).
+lastelement([_|Rest], E) :- lastelement(Rest, E).
+
+% append(X,Y,Z) :- Z unifies to X concat Y
+append([], X, X).
+append([X1|X2], Y, [X1|Z]) :- append(X2,Y,Z).
+
+append3(X,Y,Z,R) :- append(X,Y,Z1), append(Z1,Z,R).
+
+% flatten(List, Result) : Flattens a list into only its constituents
+flatten([],[]).
+flatten([X|Rest],Result) :- 
+    flatten(X, Result1), 
+    flatten(Rest, Result2), 
+    append(Result1, Result2, Result).
+flatten(X, Result) :- atomic(X), Result =[X]. % handle atoms
+flatten([X|Rest], Result) :- flatten(Rest, Result2), append([X], Result2, Result). % handle lists 
+
+% Naive and stupid, because append itself is expensive.
+reverse([], []).
+reverse([H|T], R) :-
+    reverse(T, R2), 
+    append(R2, [H], R).
+
+
+% Use stack to save appends 
+fastreverse(Original, Result) :-
+    nonvar(Original),
+    fastreverse_aux(Original, [], Result).
+fastreverse_aux([], Stack, Stack).
+fastreverse_aux([H|T], Stack, Result) :- fastreverse_aux(T, [H|Stack], Result).
+    
+% write_str(String) : By default input of "X" will output [ASCII(X)], so this will instead print out the literal
+write_str([]).
+write_str([H|T]) :- put(H), write_str(T).
+
+
+print_splits(String) :- 
+    nonvar(String),
+    print_splits(String, []).
+print_splits([], Front) :- write_str(Front), nl.
+print_splits([H|T], Front) :- 
+    write_str(Front), write_str(" "), write_str([H|T]), nl, 
+    append(Front, [H], F2),
+    print_splits(T, F2).
+
+ends_in_s(String) :- lastelement(String, 115).
+
+% read_str(A) : unifies A to a list of charcodes
+read_str(String) :- get0(Char), read_str_aux(Char, String).
+read_str_aux(-1, []) :- !.
+read_str_aux(13, []) :- !.
+read_str_aux(10, []) :- !.
+read_str_aux(Char, [Char|Rest]) :- read_str(Rest).
+
+% read_atom(A) : unifies A with input
+read_atom(Atom) :-
+    read_str(String), name(Atom, String).
+
+% read_charlist(A): Unifies A to a list of chars
+read_charlist(Charlist) :- get0(Char), read_charlist_aux(Char, Charlist).
+read_charlist_aux(-1, []) :- !.
+read_charlist_aux(13, []) :- !.
+read_charlist_aux(10, []) :- !.
+read_charlist_aux(C, [Char|Rest]) :- char_code(Char, C), read_charlist(Rest).
+
+% read_str_no_blanks(String) :- Get input without blanks
+read_str_no_blanks(String) :- get0(Char), read_str_no_blanks_aux(Char, String).
+read_str_no_blanks_aux(-1, []) :- !.
+read_str_no_blanks_aux(10, []) :- !.
+read_str_no_blanks_aux(13, []) :- !.
+read_str_no_blanks_aux(Char, Rest) :- Char is 32, read_str_no_blanks(Rest).
+read_str_no_blanks_aux(Char, [Char|Rest]) :- read_str_no_blanks(Rest).
+
+% functor(arg3,arg2,arg1) => functor(arg1, arg2, arg3)
+reverse_functor_args(Input, Result) :- 
+    Input =.. [H|Args], 
+    fastreverse(Args, ReversedArgs), 
+    append([H], ReversedArgs, ResultList), 
+    Result =.. ResultList.
+
+% Gets the Indexth arg of the functor, stored in Result
+nth_arg(Functor, Index, Result) :- 
+    functor(Functor, _, Arity),
+    Arity >= Index, 
+    arg(Index, Functor, Result).
+
+% Calls the predicate 'functor(argslist)'
+apply(Functor, Argslist) :-
+    Query =.. [Functor|Argslist], 
+    call(Query).
+
+
+% map(functor, list, result)
+% Functor is 2 argument predicate, 
+% Result = [R_i] s.t for each L_i, Functor(L_i, R_i).
+
+%map(Functor, [H1|T1], [H2|T2]) :- !.
+%    apply(Functor, 
+% Test data
+capital_of(georgia, atlanta).
+capital_of(california, sacramento).
+capital_of(florida, tallahassee).
+capital_of('new york', albany).
+
+
+% Tokenize(String, Output) - splits the string to lowercase tokens to assert 
+tokenize([], []) :- !.
+tokenize(String, [Word|Rest]) :-
+    grab_word(String, Chars, NewString),
+    name(Word, Chars),
+    tokenize(NewString, Rest).
+
+grab_word([32|Tail], [], Tail) :- !. % Space = separator
+grab_word([],[],[]).
+
+%grab_word([Char|Tail] ,Chars, Rest) :-
+%    punctuation(Char), !,
+%    grab_word(Tail, Chars, Rest).
+
+grab_word([Char|Tail1], [NewChar|Tail2], Rest) :-
+    grab_word(Tail1, Tail2, Rest), 
+    lowercase(Char, NewChar).
+
+punctuation(Char) :- Char =< 7.
+punctuation(Char) :- Char >= 58, Char =< 64.
+punctuation(Char) :- Char >= 91, Char =< 96.
+punctuation(Char) :- Char >= 123.
+
+lowercase(Char,NewChar) :-
+    Char >= 65, Char =< 90, !,
+    NewChar is Char+32.
+lowercase(Char, Char).
+
+% Get byte
+get_byte(C) :- get0(C).
+get_byte(C) :- get0(C), !.
+get_byte(-1).
+
+% Binding for the rdf data.
+bind_rdf([H|T], S, O, P) :- 
+    S = H, bind_rdf_O(T, O, Rest), P = Rest.
+bind_rdf_O([H|Rest], O, Rest) :- O = H. % assign object

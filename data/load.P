@@ -1,0 +1,36 @@
+% Read in the data from dataset.nt and then load the predicates 
+
+:- reconsult('utils.P').
+
+main :- 
+    see('dataset.nt'),
+    read_str(A),
+    tokenize(A, List),
+    bind_rdf(List, S, O, P),
+    write(S),nl,
+    write(O),nl,
+    write(P),nl,nl,
+    
+    read_str(B),
+    write(B), nl,
+    seen.
+
+
+
+/*test :-
+    open('testdata', read, Str),
+    read_file(Str,Lines),
+    close(Str),
+    write(Lines), nl.
+
+read_file(Stream,[]) :-
+    at_end_of_stream(Stream).
+
+read_file(Stream,[X|L]) :-
+    \+ at_end_of_stream(Stream),
+    read(Stream,X),
+    read_file(Stream,L).*/
+
+
+
+
