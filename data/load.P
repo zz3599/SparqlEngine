@@ -4,18 +4,19 @@
 
 main :- 
     see('dataset.nt'),
+    read_file(user_input),
+    seen.
+
+read_file(Stream) :- at_end_of_stream(Stream), !.
+read_file(Stream) :- 
     read_str(A),
     tokenize(A, List),
     bind_rdf(List, S, O, P),
     write(S),nl,
     write(O),nl,
-    write(P),nl,nl,
-    
-    read_str(B),
-    write(B), nl,
-    seen.
-
-
+    write(P),nl,nl, 
+    assert(rdf3(S,O,P)).
+%    read_file(Stream).
 
 /*test :-
     open('testdata', read, Str),
