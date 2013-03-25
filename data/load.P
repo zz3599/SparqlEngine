@@ -4,34 +4,30 @@
 
 main :- 
     see('dataset.nt'),
+    tell('output.P'),
     read_file(user_input),
     seen.
 
-read_file(Stream) :- at_end_of_stream(Stream), !.
+read_file(Stream) :- at_end_of_stream(Stream), told(), !.
 read_file(Stream) :- 
     read_str(A),
     tokenize(A, List),
     bind_rdf(List, S, O, P),
-    write(S),nl,
-    write(O),nl,
-    write(P),nl,nl, 
-    assert(rdf3(S,O,P)).
-%    read_file(Stream).
+ %    write(P),nl,
+    flatten(P, PF), 
+    clean(PF, Result),
+ %   write(Result), nl,nl,
+    name(Subject, S),
+    name(Object, O),
+    name(Predicate, Result),
+    write('rdf3('''), 
+    
+    write(Subject), write(''','''),
+    write(Object),write(''','''),
+    write(Predicate), write(''').\n'),
 
-/*test :-
-    open('testdata', read, Str),
-    read_file(Str,Lines),
-    close(Str),
-    write(Lines), nl.
-
-read_file(Stream,[]) :-
-    at_end_of_stream(Stream).
-
-read_file(Stream,[X|L]) :-
-    \+ at_end_of_stream(Stream),
-    read(Stream,X),
-    read_file(Stream,L).*/
-
-
+    assert(rdf3(Subject,Object,Predicate)),
+    
+    read_file(Stream).
 
 

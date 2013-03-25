@@ -34,14 +34,23 @@ append([X1|X2], Y, [X1|Z]) :- append(X2,Y,Z).
 
 append3(X,Y,Z,R) :- append(X,Y,Z1), append(Z1,Z,R).
 
+% difference list
+% append([a,b,c|E]-E,  [x,y,z|W]-W,  O) produces
+% E = [x, y, z|W],
+%  O = [a, b, c, x, y, z|W]-W.
+append(I-M, M-O, I-O).
+
+% difference list append
+dl_append((A,B), (B,C), (A,C)).
+
 % flatten(List, Result) : Flattens a list into only its constituents
-flatten([],[]).
-flatten([X|Rest],Result) :- 
-    flatten(X, Result1), 
-    flatten(Rest, Result2), 
-    append(Result1, Result2, Result).
-flatten(X, Result) :- atomic(X), Result =[X]. % handle atoms
-flatten([X|Rest], Result) :- flatten(Rest, Result2), append([X], Result2, Result). % handle lists 
+flatten([],[]) :- !.
+flatten([L|Rest], Flat) :-
+    !, 
+    flatten(L, NewL), 
+    flatten(Rest, NewLs), 
+    append(NewL, NewLs, Flat).
+flatten(X, [X]). % handle atoms
 
 % Naive and stupid, because append itself is expensive.
 reverse([], []).
@@ -133,9 +142,9 @@ capital_of('new york', albany).
 
 % Tokenize(String, Output) - splits the string to lowercase tokens to assert 
 tokenize([], []) :- !.
-tokenize(String, [Word|Rest]) :-
+tokenize(String, [Chars|Rest]) :-
     grab_word(String, Chars, NewString),
-    name(Word, Chars),
+%    name(Word, Chars),
     tokenize(NewString, Rest).
 
 grab_word([32|Tail], [], Tail) :- !. % Space = separator
@@ -168,3 +177,19 @@ get_byte(-1).
 bind_rdf([H|T], S, O, P) :- 
     S = H, bind_rdf_O(T, O, Rest), P = Rest.
 bind_rdf_O([H|Rest], O, Rest) :- O = H. % assign object
+
+
+
+% cleanlist(Input, Cleaned)
+% Get rid of quotation marks, and add spaces between each element
+cleanlist([H|T], [C|T2]) :- 
+    clean(H, C), 
+    cleanlist(T,T2).
+
+cleanlist([], []).
+%addspace(List, [32|List]). 
+
+% Strip the annoying quotes
+clean([H|T], Chars) :- H == 34, !, clean(T, Chars). 
+clean([H|T], [H|T2]) :- clean(T, T2).
+clean([], []).

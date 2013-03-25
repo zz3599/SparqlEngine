@@ -1,4 +1,0 @@
-regexmatch(X):-
-
-pcre:match('(\d{5}-\d{4})\ [A-Z]{2}',
-'Hello12345-6789 NYwalk', X, 'one').
