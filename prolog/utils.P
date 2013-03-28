@@ -1,6 +1,7 @@
 % -*- Mode: Prolog -*-
 % Useful utilities for prolog 
 
+%------------------------Arithmetic--------------------
 close_enough(X,X) :- ! .
 close_enough(X,Y) :- X < Y, Y-X < 0.0001.
 close_enough(X,Y) :- Y < X, close_enough(Y,X).
@@ -8,31 +9,36 @@ close_enough(X,Y) :- Y < X, close_enough(Y,X).
 real_sqrt(X,Y) :- X >= 0.0, R is sqrt(X), close_enough(R,Y).
 real_sqrt(X,none) :- X < 0.0.
 
-third_element([_,_,C|_], C).
+max(X,Y,Z) :- X=<Y, !, Z=Y.
+max(X,_,X).
 
+min(X,Y,Z) :- X>=Y, !, Z=Y.
+min(X,_,X).
+
+
+% ----------------------LIST OPERATIONS--------------------------
+% member(X, List)
 member(X, [X|_]).
 member(X, [_|Rest]) :- member(X, Rest).
 
-% list_length(List, Length)
-list_length([], 0).
-list_length([_|Rest], Length) :- list_length(Rest, RestLength), Length is RestLength+1.
+% append(X,Y,Z) :- Z is X + Y
+append([], X, X).
+append([X1|X2], Y, [X1|Z]) :- append(X2,Y,Z).
 
-swap_first_two([A,B|C], [B,A|C]).
+% list_length(List, Length) - use an accumulator to save stack space
+% Tail call/last call optimization
+list_length(List, Length) :- list_length(List, 0, Length).
+list_length([], C, C).
+list_length([X|Y], C, L) :- C2 is C+1, list_length(Y, C2, L).
 
 % count_occurrences(Element, List, Number) :- Stores the number of times E appears in List in Number
 count_occurrences(_, [], 0).
-count_occurrences(X, [X|Rest], N) :- count_occurrences(X, Rest, N1), N is N1+1.
-count_occurrences(X, [Y|Rest], N) :- X \== Y, count_occurrences(X, Rest, N).
+count_occurrences(X, [X|Rest], N) :- !, count_occurrences(X, Rest, N1), N is N1+1.
+count_occurrences(X, [Y|Rest], N) :- count_occurrences(X, Rest, N).
 
 % lastelement(List, Last) :- Unifies Last to the last element of List
 lastelement([A],A).
 lastelement([_|Rest], E) :- lastelement(Rest, E).
-
-% append(X,Y,Z) :- Z unifies to X concat Y
-append([], X, X).
-append([X1|X2], Y, [X1|Z]) :- append(X2,Y,Z).
-
-append3(X,Y,Z,R) :- append(X,Y,Z1), append(Z1,Z,R).
 
 % flatten(List, Result) : Flattens a list into only its constituents
 flatten([],[]).
@@ -43,24 +49,41 @@ flatten([X|Rest],Result) :-
 flatten(X, Result) :- atomic(X), Result =[X]. % handle atoms
 flatten([X|Rest], Result) :- flatten(Rest, Result2), append([X], Result2, Result). % handle lists 
 
-% Naive and stupid, because append itself is expensive.
-reverse([], []).
-reverse([H|T], R) :-
-    reverse(T, R2), 
-    append(R2, [H], R).
-
-
 % Use stack to save appends 
-fastreverse(Original, Result) :-
+reverse(Original, Result) :-
     nonvar(Original),
-    fastreverse_aux(Original, [], Result).
-fastreverse_aux([], Stack, Stack).
-fastreverse_aux([H|T], Stack, Result) :- fastreverse_aux(T, [H|Stack], Result).
+    reverse(Original, [], Result).
+reverse([], Stack, Stack).
+reverse([H|T], Stack, Result) :- reverse(T, [H|Stack], Result).
+
+% Remove X from list 
+remove(X, [X|Y], Y).
+remove(X, [Y|Z], [Y|W]) :- remove(X, Z, W).
+
+% Remove all occurrences 
+removeall(X, [], []).
+removeall(X, [X|Y], Z) :- !, removeall(X, Y, Z).
+removeall(X, [Y|Z], [Y|W]) :- removeall(X, Z, W).
     
+% Union arg1 arg2 into arg3
+union([], X, X).
+union([X|More], Y, Z) :- member(X, Y), !, union(More, Y, Z). 
+union([X|More], Y, [X|Z]) :- union(More, Y, Z).
+
+% Intersection of arg1 and arg2 
+intersection([], X, []).
+intersection([X|More], Y, [X|Z]) :- member(X, Y), !, intersection(More, Y, Z).
+intersection([X|More], Y, Z) :- intersection(More, Y, Z).
+
+% subtract(X,Y,Z) :- Z is Y \setdiff X
+subtract([], X, X).
+subtract([X|More], Y, Z) :- remove(X, Y, W), !, subtract(More, W, Z). % If X was removed, cannot backtrack
+subtract([X|More], Y, Z) :- subtract(More, Y, Z).
+
+% ----------------------IO--------------------------------------------------
 % write_str(String) : By default input of "X" will output [ASCII(X)], so this will instead print out the literal
 write_str([]).
 write_str([H|T]) :- put(H), write_str(T).
-
 
 print_splits(String) :- 
     nonvar(String),
@@ -70,8 +93,6 @@ print_splits([H|T], Front) :-
     write_str(Front), write_str(" "), write_str([H|T]), nl, 
     append(Front, [H], F2),
     print_splits(T, F2).
-
-ends_in_s(String) :- lastelement(String, 115).
 
 % read_str(A) : unifies A to a list of charcodes
 read_str(String) :- get0(Char), read_str_aux(Char, String).
@@ -130,7 +151,7 @@ capital_of(california, sacramento).
 capital_of(florida, tallahassee).
 capital_of('new york', albany).
 
-
+%--------------------------------PARSING----------------------------
 % Tokenize(String, Output) - splits the string to lowercase tokens to assert 
 tokenize([], []) :- !.
 tokenize(String, [Word|Rest]) :-
