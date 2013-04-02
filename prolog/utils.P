@@ -141,7 +141,16 @@ apply(Functor, Argslist) :-
 
 % map(functor, list, result)
 % Functor is 2 argument predicate, 
-% Result = [R_i] s.t for each L_i, Functor(L_i, R_i).
+map(Functor, [H|T], Stack, Result) :-
+    apply(Functor, [H,Who]), 
+    write(Who), nl,
+    map(Functor, T, [Who|Stack], Result).
+map(Functor, [], Stack, Result) :-
+    reverse(Stack, Result).
+map(Functor, List, Result) :-
+    var(Result), !,
+    map(Functor, List, [], Result).
+
 
 %map(Functor, [H1|T1], [H2|T2]) :- !.
 %    apply(Functor, 
@@ -180,4 +189,17 @@ lowercase(Char,NewChar) :-
     NewChar is Char+32.
 lowercase(Char, Char).
 
+classify(Num) :- R is Num mod 2, classify_(R).
+classify_(1) :- !, write_str("odd"), nl.
+classify_(0) :- !, write_str("even"), nl.
+classify_(_) :- write_str("not integer"), nl.
 
+sum(X,Y,Result) :- sum(X,Y,0,Result).
+sum(X,Y,Store, Store) :- X > Y, !.
+sum(X,Y,Store, Result) :- 
+    Store2 is Store + X,
+    X2 is X + 1,
+    sum(X2, Y, Store2, Result).
+
+test(N) :- write(N), nl, NewN is N+1, test(NewN).
+test2(N) :- write(N), nl, NewN is N+1, test2(NewN), nl.
