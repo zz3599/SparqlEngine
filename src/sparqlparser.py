@@ -35,7 +35,7 @@ class Prefix(Node):
     def __str__(self):
         return 'ns: %s, uri: %s' % (self.ns, self.nsuri)
     def translate(self):
-        return 'prefix(\"%s\", \"%s\").' %(self.ns, self.nsuri)
+        return "prefix('%s', '%s')." %(self.ns, self.nsuri)
 
 class Header(Node):
     fields = ['prefixes']

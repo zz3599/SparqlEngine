@@ -1,7 +1,7 @@
-prefix("bsbm-inst:", "<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>").
-prefix("bsbm:", "<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>").
-prefix("rdfs:", "<http://www.w3.org/2000/01/rdf-schema#>").
-prefix("rdf:", "<http://www.w3.org/1999/02/22-rdf-syntax-ns#>").
+prefix('bsbm-inst:', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>').
+prefix('bsbm:', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>').
+prefix('rdfs:', '<http://www.w3.org/2000/01/rdf-schema#>').
+prefix('rdf:', '<http://www.w3.org/1999/02/22-rdf-syntax-ns#>').
 result1(?product,?label) :- 
 	rdf3(?product, rdfs:label, ?label),
 	rdf3(?product, rdf:type, %ProductType%),
