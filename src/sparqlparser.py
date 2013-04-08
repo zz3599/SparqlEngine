@@ -6,13 +6,6 @@ import re
 # Translates from SPARQL queries to Prolog predicates. 
 # All __str__ return strings, all translate methods return lists, except at the top most ASTs (or null). It is up to caller to decide what to do 
 # with the list upon calling translate
-
-class EvalError(Exception):
-    """Class of exceptions raised when an error occurs during evaluation."""
-
-class AnalError(Exception):
-    """Class of exceptions raised when an error occurs during analysis."""
-
 class Globals(object):
     entirequery = None
     intermediates = 0
@@ -37,14 +30,19 @@ class Prefix(Node):
     def __str__(self):
         return 'ns: %s, uri: %s' % (self.ns, self.nsuri)
     def translate(self):
-        return "prefix('%s', '%s')." %(self.ns, self.nsuri)
+#        return "prefix('%s', '%s')." %(self.ns, self.nsuri)
+        self.ns = self.ns.split(':')[0]
+        Globals.prefixes[self.ns] =  self.nsuri
 
 class Header(Node):
     fields = ['prefixes']
     def __str__(self):
         return '\n'.join([str(x) for x in self.prefixes])        
     def translate(self):
-        return '\n'.join([x.translate() for x in self.prefixes])
+        for x in self.prefixes:
+            x.translate()
+        print Globals.prefixes
+        return "\n"
     
 class Plist(Node):
     fields = ['params']
@@ -87,8 +85,20 @@ class Condition(Node):
     fields = ['subject', 'predicate', 'object']
     def __str__(self):
         return 's: %s, p: %s, o: %s' %(self.subject, self.predicate, self.object)
+    def applyPrefix(self, string):
+        tokens = string.split(':')
+        if len(tokens) < 2 : return string
+        if tokens[0] not in Globals.prefixes: return string
+        r = Globals.prefixes[tokens[0]]
+        parts = r.split('>')
+        parts[len(parts)-2] += tokens[1]
+        print("Replaced %s-> %s" %(string, '>'.join(parts)))
+        return '>'.join(parts)
     def translate(self):
-        return "rdf3(%s, %s, %s)" %(self.subject, self.predicate, self.object)
+        self.subject = self.applyPrefix(self.subject)
+        self.predicate = self.applyPrefix(self.predicate)
+        self.object = self.applyPrefix(self.object)
+        return "rdf3('%s', '%s', '%s')" %(self.subject, self.predicate, self.object)
 
 class MainQuery(Node):
     fields = ['type', 'params', 'body']
@@ -293,25 +303,15 @@ try:
     parser = Parser()
     Globals.entirequery = parser(prog)
     #print('----------------PARSETREE---------------------------------------')
-    #print(entirequery)
     print('---------------TRANSLATION-----------------------------------------')
-    
     translation = Globals.entirequery.translate()
     outfile = os.path.basename(sys.argv[1]) + ".P"
     f = open(outfile, 'w+')
     f.write(translation)
-    print(translation)
-    print outfile
+#    print(translation)
+ #   print outfile
     f.close()
 
 except tpg.Error:
     print('Parsing Error')
     raise
-
-except AnalError as e:
-    print('Analysis Error')
-    #raise
-
-except EvalError:
-    print('Evaluation Error')
-    #raise
