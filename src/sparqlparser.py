@@ -7,14 +7,16 @@ import re
 # All __str__ return strings, all translate methods return lists, except at the top most ASTs (or null). It is up to caller to decide what to do 
 # with the list upon calling translate
 
-global entirequery # The root node for the entire parse tree of the SPARQL query
-intermediates = 0 # For filters with expressions, keeps track of # of intermediate values
-
 class EvalError(Exception):
     """Class of exceptions raised when an error occurs during evaluation."""
 
 class AnalError(Exception):
     """Class of exceptions raised when an error occurs during analysis."""
+
+class Globals(object):
+    entirequery = None
+    intermediates = 0
+    prefixes = dict()
 
 class Node(object):
     """Base class of AST nodes."""
@@ -49,7 +51,6 @@ class Plist(Node):
     def __init__(self, params):
         #self.params = [x.strip('?!%') for x in params]
         self.params = params
-        global entirequery
         if self.params[0].lower() == 'distinct':
             self.params.pop(0)        
             self.distinct = True
@@ -171,11 +172,10 @@ class Filter(Node):
         # process the text
         for i in range(len(filters)):
             filter = filters[i]
-            global intermediates # For sake of avoiding variable collision
             tokens = re.split("(<=|>=|==|!=|<|>)", filter, 3) # Capture so we can reconstruct easily
-            translate = 'FilterRight%d is %s' %(intermediates, tokens[2])            
-            translate += ', %s %s FilterRight%d' % (tokens[0], '=\=' if tokens[1] == '!=' else tokens[1], intermediates)
-            intermediates += 1
+            translate = 'FilterRight%d is %s' %(Globals.intermediates, tokens[2])            
+            translate += ', %s %s FilterRight%d' % (tokens[0], '=\=' if tokens[1] == '!=' else tokens[1], Globals.intermediates)
+            Globals.intermediates += 1
             translatelist.append(translate) 
         return translatelist
                 
@@ -206,9 +206,8 @@ class OrderBy(Node):
     def __str__(self):
         return 'order by: %s' % self.field
     def translate(self):
-        global entirequery
         return """\n\norderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, %d, OrderedBag).\n""" %(
-          entirequery.mainquery.params.params.index(self.field) + 1 
+          Globals.entirequery.mainquery.params.params.index(self.field) + 1 
         )
         
 class Limit(Node):
@@ -292,13 +291,12 @@ class Parser(tpg.Parser):
 try:
     prog = open(sys.argv[1]).read()
     parser = Parser()
-    global entirequery
-    entirequery = parser(prog)
+    Globals.entirequery = parser(prog)
     #print('----------------PARSETREE---------------------------------------')
     #print(entirequery)
     print('---------------TRANSLATION-----------------------------------------')
     
-    translation = entirequery.translate()
+    translation = Globals.entirequery.translate()
     outfile = os.path.basename(sys.argv[1]) + ".P"
     f = open(outfile, 'w+')
     f.write(translation)
