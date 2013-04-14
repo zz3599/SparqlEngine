@@ -1,19 +1,19 @@
 
 
-result1(?product,?label) :- 
-	rdf3('?product', '<http://www.w3.org/2000/01/rdf-schema#label>', '?label'),
-	rdf3('?product', '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', '%ProductType%'),
-	rdf3('?product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', '%ProductFeature1%'),
-	rdf3('?product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', '%ProductFeature2%'),
-	rdf3('?product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', '?p1'),
+result1(Product,Label,Producttype,Productfeature1,Productfeature2,Productfeature2,Producttype,Productfeature1,Productfeature3) :- 
+	rdf3('Product', '<http://www.w3.org/2000/01/rdf-schema#label>', 'Label'),
+	rdf3('Product', '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', 'Producttype'),
+	rdf3('Product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', 'Productfeature1'),
+	rdf3('Product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', 'Productfeature2'),
+	rdf3('Product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', 'P1'),
 	pcre:match("%word1%|%word2%|%word3%", ?label, Matchlist, 'one'), Matchlist \==[],
 	FilterRight0 is ?origProperty2+220, ?simProperty2 == FilterRight0,
 	FilterRight1 is ?origProperty2-150, ?simProperty2 > FilterRight1,
-	rdf3('?product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', '?p1'),
+	rdf3('Product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', 'P1'),
 	FilterRight2 is ?product, %ProductXYZ% =\= FilterRight2,
 	var(?testVar),
-	(rdf3('?product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', '%ProductFeature2%'); not rdf3('?product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', '%ProductFeature2%')),
-	(rdf3('?product', '<http://www.w3.org/2000/01/rdf-schema#label>', '?testVar'); not rdf3('?product', '<http://www.w3.org/2000/01/rdf-schema#label>', '?testVar')),
+	(rdf3('Product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', 'Productfeature2'); not rdf3('Product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', 'Productfeature2')),
+	(rdf3('Product', '<http://www.w3.org/2000/01/rdf-schema#label>', 'Testvar'); not rdf3('Product', '<http://www.w3.org/2000/01/rdf-schema#label>', 'Testvar')),
 	FilterRight3 is ?origProperty1+150, ?simProperty1 < FilterRight3,
 	FilterRight4 is ?origProperty1-150, ?simProperty1 > FilterRight4,
 	FilterRight5 is %x%, ?value1 > FilterRight5,
@@ -21,12 +21,12 @@ result1(?product,?label) :-
 	FilterRight7 is ?origProperty2-220, ?simProperty2 > FilterRight7.
 
 
-result2(?product,?label) :- 
-	rdf3('?product', '<http://www.w3.org/2000/01/rdf-schema#label>', '?label'),
-	rdf3('?product', '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', '%ProductType%'),
-	rdf3('?product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', '%ProductFeature1%'),
-	rdf3('?product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', '%ProductFeature3%'),
-	rdf3('?product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric2>', '?p2').
+result2(Product,Label,Producttype,Productfeature1,Productfeature2,Productfeature2,Producttype,Productfeature1,Productfeature3) :- 
+	rdf3('Product', '<http://www.w3.org/2000/01/rdf-schema#label>', 'Label'),
+	rdf3('Product', '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', 'Producttype'),
+	rdf3('Product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', 'Productfeature1'),
+	rdf3('Product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', 'Productfeature3'),
+	rdf3('Product', '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric2>', 'P2').
 
 orderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, 1, OrderedBag).
 
@@ -40,9 +40,9 @@ limit([H|T], Counter, Limit, Result):-
     Result = [H|Result2]. 
 
 query(FinalBag):-
-	setof(query_intermediate(?product,?label), query_intermediate(?product,?label), ResultIntermediate),
+	setof(query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,Productfeature2,Producttype,Productfeature1,Productfeature3), query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,Productfeature2,Producttype,Productfeature1,Productfeature3), ResultIntermediate),
 	orderby(ResultIntermediate, OrderedResult),
 	limit(OrderedResult, 0, 10, LimitResult),
 	FinalBag = LimitResult.
 
-query_intermediate(?product,?label):- result1(?product,?label); result2(?product,?label).
+query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,Productfeature2,Producttype,Productfeature1,Productfeature3):- result1(Product,Label,Producttype,Productfeature1,Productfeature2,Productfeature2,Producttype,Productfeature1,Productfeature3); result2(Product,Label,Producttype,Productfeature1,Productfeature2,Productfeature2,Producttype,Productfeature1,Productfeature3).

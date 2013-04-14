@@ -6,10 +6,27 @@ import re
 # Translates from SPARQL queries to Prolog predicates. 
 # All __str__ return strings, all translate methods return lists, except at the top most ASTs (or null). It is up to caller to decide what to do 
 # with the list upon calling translate
+
+# Remove non-chars at the beginning, and put the first character to uppercase
+def cleanVar(var):
+    return re.sub("\W+", "", var).title()
+
+# Applies a prefix to a given string
+def applyPrefix(string):
+    tokens = string.split(':')
+    if len(tokens) < 2 : return string
+    if tokens[0] not in Globals.prefixes: return string
+    r = Globals.prefixes[tokens[0]]
+    parts = r.split('>')
+    parts[len(parts)-2] += tokens[1]
+    print("Replaced %s-> %s" %(string, '>'.join(parts)))
+    return '>'.join(parts)
+
 class Globals(object):
     entirequery = None
     intermediates = 0
     prefixes = dict()
+    params = []
 
 class Node(object):
     """Base class of AST nodes."""
@@ -30,9 +47,8 @@ class Prefix(Node):
     def __str__(self):
         return 'ns: %s, uri: %s' % (self.ns, self.nsuri)
     def translate(self):
-#        return "prefix('%s', '%s')." %(self.ns, self.nsuri)
-        self.ns = self.ns.split(':')[0]
-        Globals.prefixes[self.ns] =  self.nsuri
+        self.ns = self.ns.split(':')[0] # Remove the end colon if there is one
+        Globals.prefixes[self.ns] =  self.nsuri # Assign to global prefixes for fast lookup
 
 class Header(Node):
     fields = ['prefixes']
@@ -47,7 +63,6 @@ class Header(Node):
 class Plist(Node):
     fields = ['params']
     def __init__(self, params):
-        #self.params = [x.strip('?!%') for x in params]
         self.params = params
         if self.params[0].lower() == 'distinct':
             self.params.pop(0)        
@@ -55,8 +70,11 @@ class Plist(Node):
             #entirequery.distinct = True # Distinct -> setof/3, Non-distinct -> bagof/3. 
         else : 
             self.distinct = False            
+        self.params = [cleanVar(x) for x in self.params]
+        Globals.params = self.params
     def __str__(self):
         return ','.join([x for x in self.params])
+    
     def translate(self):
         pass
     
@@ -68,8 +86,8 @@ class Body(Node):
         result = []
         for condition in self.conditionslist: 
             conditiontranslated = condition.translate()
-            if isinstance(conditiontranslated, list):
-                result.extend(conditiontranslated)
+            if isinstance(conditiontranslated, list): # optional block could be another body
+                result.extend(conditiontranslated) 
             else: 
                 result.append(conditiontranslated)
         return result               
@@ -83,21 +101,23 @@ class BodyUnion(Node):
     
 class Condition(Node):
     fields = ['subject', 'predicate', 'object']
+    def __init__(self, *args):
+        for f, a in zip(self.fields, args): 
+            if a[0] == '%': # A bounded variable, needs to be added to params list
+                a = cleanVar(a)
+                Globals.params.append(a)
+            elif a[0] == '?': # Unbounded variable 
+                a = cleanVar(a)
+                if a not in Globals.params: 
+                    print "ERROR: %s not in parameters list" % a
+            setattr(self, f, a)             
+        
     def __str__(self):
         return 's: %s, p: %s, o: %s' %(self.subject, self.predicate, self.object)
-    def applyPrefix(self, string):
-        tokens = string.split(':')
-        if len(tokens) < 2 : return string
-        if tokens[0] not in Globals.prefixes: return string
-        r = Globals.prefixes[tokens[0]]
-        parts = r.split('>')
-        parts[len(parts)-2] += tokens[1]
-        print("Replaced %s-> %s" %(string, '>'.join(parts)))
-        return '>'.join(parts)
     def translate(self):
-        self.subject = self.applyPrefix(self.subject)
-        self.predicate = self.applyPrefix(self.predicate)
-        self.object = self.applyPrefix(self.object)
+        self.subject = applyPrefix(self.subject)
+        self.predicate = applyPrefix(self.predicate)
+        self.object = applyPrefix(self.object)
         return "rdf3('%s', '%s', '%s')" %(self.subject, self.predicate, self.object)
 
 class MainQuery(Node):
@@ -213,6 +233,8 @@ class Modifier(Node):
     
 class OrderBy(Node):
     fields = ['field']
+    def __init__(self, field):
+        self.field = cleanVar(field)
     def __str__(self):
         return 'order by: %s' % self.field
     def translate(self):
@@ -263,7 +285,7 @@ class Parser(tpg.Parser):
     Header/s -> $l=[]$ ( 'prefix' id/s  id/p  $l.append(Prefix(s,p))$)* $s = Header(l)$; 
     Main/s -> ('select'/s) Parameters/p 'where' '\{' Body/b '\}' $s = MainQuery(s, p, b)$;
     Parameters/s -> $l=[]$ (id/i $l.append(i)$)+ $s=Plist(l)$;
-    Body/s ->BodyNormal/s | BodyUnion/s ; # BodyUnion contains a Union followed by blocks  
+    Body/s -> BodyNormal/s | BodyUnion/s ; # BodyUnion contains a Union followed by blocks  
     BodyUnion/s -> '\{' BodyNormal/n '\}' 'union' '\{' BodyNormal/o '\}' $s=BodyUnion(n,o)$ ; 
     BodyNormal/s -> $l=[]$ (Condition/s $l.append(s)$ | 
                         Filter/s $l.append(s)$  |
