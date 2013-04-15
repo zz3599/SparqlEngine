@@ -103,13 +103,10 @@ class Condition(Node):
     fields = ['subject', 'predicate', 'object']
     def __init__(self, *args):
         for f, a in zip(self.fields, args): 
-            if a[0] == '%': # A bounded variable, needs to be added to params list
+            if a[0] == '%' or a[0] == '?': # A variable needs to be capitalized
                 a = cleanVar(a)
-                Globals.params.append(a)
-            elif a[0] == '?': # Unbounded variable 
-                a = cleanVar(a)
-                if a not in Globals.params: 
-                    print "ERROR: %s not in parameters list" % a
+                print a 
+                if a not in Globals.params:
                     Globals.params.append(a)
             setattr(self, f, a)       
     def __str__(self):
@@ -148,7 +145,8 @@ class EntireQuery(Node):
     def translate(self):
         predicates = self.header.translate() + self.mainquery.translate() + self.modifier.translate()
         parameters = str(self.mainquery.params)
-        query = '\n\nquery(FinalBag):-\n\t'
+        query = '\n\nquery(FinalBag,' + ','.join(Globals.params)
+        query += '):-\n\t'
         querybody = []
         queryintermediate = None
         if isinstance(self.mainquery.body, BodyUnion):
@@ -178,7 +176,7 @@ class Regex(Node):
     def __str__(self):
         return 'property: %s, regex: %s' %(self.property, self.regex)
     def translate(self):
-        return """pcre:match(%s, %s, Matchlist, 'one'), Matchlist \==[]""" %(self.regex, self.property)
+        return """pcre:match(%s, %s, Matchlist, 'one'), Matchlist \==[]""" %(self.regex, cleanVar(self.property))
 
 class Bound(Node):
     fields = ['bound', 'variable']

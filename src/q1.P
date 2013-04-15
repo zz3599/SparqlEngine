@@ -1,13 +1,13 @@
 
 
-result1(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4) :- 
-	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
-	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Productfeature1),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Productfeature2),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', Value1),
+result1(Product,Label,Rdfslabel,Rdftype,Producttype,Bsbmproductfeature,Productfeature1,Productfeature2,Bsbmproductpropertynumeric1,Value1,X,Productxyz,Bsbmproductpropertytextual4,Propertytextual4) :- 
+	rdf3(Product, 'Rdfslabel', Label),
+	rdf3(Product, 'Rdftype', Producttype),
+	rdf3(Product, 'Bsbmproductfeature', Productfeature1),
+	rdf3(Product, 'Bsbmproductfeature', Productfeature2),
+	rdf3(Product, 'Bsbmproductpropertynumeric1', Value1),
 	FilterRight0 is X, Value1 > FilterRight0,
-	(rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual4>', Propertytextual4); not rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual4>', Propertytextual4)).
+	(rdf3(Productxyz, 'Bsbmproductpropertytextual4', Propertytextual4); not rdf3(Productxyz, 'Bsbmproductpropertytextual4', Propertytextual4)).
 
 
 orderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, 2, OrderedBag).
@@ -22,9 +22,9 @@ limit([H|T], Counter, Limit, Result):-
     Result = [H|Result2]. 
 
 query(FinalBag):-
-	setof(query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4), query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4), ResultIntermediate),
+	setof(query_intermediate(Product,Label,Rdfslabel,Rdftype,Producttype,Bsbmproductfeature,Productfeature1,Productfeature2,Bsbmproductpropertynumeric1,Value1,X,Productxyz,Bsbmproductpropertytextual4,Propertytextual4), query_intermediate(Product,Label,Rdfslabel,Rdftype,Producttype,Bsbmproductfeature,Productfeature1,Productfeature2,Bsbmproductpropertynumeric1,Value1,X,Productxyz,Bsbmproductpropertytextual4,Propertytextual4), ResultIntermediate),
 	orderby(ResultIntermediate, OrderedResult),
 	limit(OrderedResult, 0, 10, LimitResult),
 	FinalBag = LimitResult.
 
-query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4):- result1(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4).
+query_intermediate(Product,Label,Rdfslabel,Rdftype,Producttype,Bsbmproductfeature,Productfeature1,Productfeature2,Bsbmproductpropertynumeric1,Value1,X,Productxyz,Bsbmproductpropertytextual4,Propertytextual4):- result1(Product,Label,Rdfslabel,Rdftype,Producttype,Bsbmproductfeature,Productfeature1,Productfeature2,Bsbmproductpropertynumeric1,Value1,X,Productxyz,Bsbmproductpropertytextual4,Propertytextual4).
