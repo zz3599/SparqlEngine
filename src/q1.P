@@ -1,0 +1,30 @@
+
+
+result1(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4) :- 
+	rdf3(Product, 'rdfs:label', Label),
+	rdf3(Product, 'rdf:type', Producttype),
+	rdf3(Product, 'bsbm:productFeature', Productfeature1),
+	rdf3(Product, 'bsbm:productFeature', Productfeature2),
+	rdf3(Product, 'bsbm:productPropertyNumeric1', Value1),
+	FilterRight0 is X, Value1 > FilterRight0,
+	(rdf3(Productxyz, 'bsbm:productPropertyTextual4', Propertytextual4); not rdf3(Productxyz, 'bsbm:productPropertyTextual4', Propertytextual4)).
+
+
+orderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, 2, OrderedBag).
+
+
+limit(_, Count, Count, Result) :- Result = [].
+limit([], _, _, Result) :- Result = [].
+limit([H|T], Counter, Limit, Result):-
+    Counter < Limit, 
+    Counter2 is Counter + 1,
+    limit(T, Counter2, Limit, Result2),
+    Result = [H|Result2]. 
+
+query(FinalBag):-
+	setof(query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4), query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4), ResultIntermediate),
+	orderby(ResultIntermediate, OrderedResult),
+	limit(OrderedResult, 0, 10, LimitResult),
+	FinalBag = LimitResult.
+
+query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4):- result1(Product,Label,Producttype,Productfeature1,Productfeature2,Value1,X,Productxyz,Propertytextual4).

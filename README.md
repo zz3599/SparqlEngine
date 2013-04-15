@@ -23,12 +23,12 @@ python sparqlparser.py [inputfile]
 
 OUTPUT
 =====
-An outputfile by the name of [inputfile].P will be created in the same location as the program.
+An outputfile by the name of [inputfile].P will be created in the current dir.
 The query/1 predicate will produce be the literal translation of the SPARQL query. 
 
 DEMO
 =====
-Try any of the test/q[0-6] files
+Try any of the test/q[1-6] files
 
 
 

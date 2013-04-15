@@ -110,15 +110,15 @@ class Condition(Node):
                 a = cleanVar(a)
                 if a not in Globals.params: 
                     print "ERROR: %s not in parameters list" % a
-            setattr(self, f, a)             
-        
+                    Globals.params.append(a)
+            setattr(self, f, a)       
     def __str__(self):
         return 's: %s, p: %s, o: %s' %(self.subject, self.predicate, self.object)
     def translate(self):
         self.subject = applyPrefix(self.subject)
         self.predicate = applyPrefix(self.predicate)
         self.object = applyPrefix(self.object)
-        return "rdf3('%s', '%s', '%s')" %(self.subject, self.predicate, self.object)
+        return "rdf3(%s, '%s', %s)" %(self.subject, self.predicate, self.object)
 
 class MainQuery(Node):
     fields = ['type', 'params', 'body']
@@ -135,10 +135,10 @@ class MainQuery(Node):
             predicate1 += ',\n\t'.join(uniontranslation[0]) + '.'
             predicate2 = "\nresult2(%s) :- \n\t" % str(self.params)
             predicate2 += ',\n\t'.join(uniontranslation[1]) + '.'    
-            return predicate1 + '\n\n' +  predicate2
+            return predicate1 + '\n\n' +  predicate2 + "\n"
         else:  
             predicate1 += ',\n\t'.join(self.body.translate()) + '.'
-            return predicate1        
+            return predicate1 + "\n"        
 
 # The root node
 class EntireQuery(Node):
@@ -170,7 +170,7 @@ class EntireQuery(Node):
                 currentResult = "OffsetResult"
         querybody.append('FinalBag = %s' % currentResult)
         query += ',\n\t'.join(querybody) + '.' + queryintermediate
-        return predicates + query
+        return predicates + query + "\n"
              
 
 class Regex(Node):
@@ -192,22 +192,31 @@ class Bound(Node):
     
 class Filter(Node):
     fields = ['filter'] # Filter could be a string or a bound
+    def __init__(self, filters):
+        if isinstance(filters, str): # string is split by '&&'
+            filters = filters.split('&&')
+            filterstring = ''
+            for f in filters:
+                tokens = re.split("(<=|>=|==|!=|<|>)", f, 3) # Capture so we can reconstruct easily
+                filtervar0 = cleanVar(tokens[0]) # Left expression
+                filtervar = cleanVar(tokens[2]) # Right expression
+                if filtervar0 not in Globals.params:
+                    Globals.params.append(filtervar0) 
+                if filtervar not in Globals.params:
+                    Globals.params.append(filtervar) 
+                translate = 'FilterRight%d is %s' %(Globals.intermediates, filtervar)            
+                translate += ', %s %s FilterRight%d' % (filtervar0, '=\=' if tokens[1] == '!=' else tokens[1], Globals.intermediates)
+                Globals.intermediates += 1
+                filterstring += translate
+            self.filter = filterstring
+        else :
+            self.filter = filters
     def __str__(self):
         return '\nFilter: %s' % ('\n'.join(self.filter.split('&&') if not isinstance(self.filter, Bound) else str(self.filter)))
     def translate(self):
         if isinstance(self.filter, Bound): # A filter checking that a variable is bound or not
             return [self.filter.translate()]
-        filters = self.filter.split('&&')
-        translatelist = []
-        # process the text
-        for i in range(len(filters)):
-            filter = filters[i]
-            tokens = re.split("(<=|>=|==|!=|<|>)", filter, 3) # Capture so we can reconstruct easily
-            translate = 'FilterRight%d is %s' %(Globals.intermediates, tokens[2])            
-            translate += ', %s %s FilterRight%d' % (tokens[0], '=\=' if tokens[1] == '!=' else tokens[1], Globals.intermediates)
-            Globals.intermediates += 1
-            translatelist.append(translate) 
-        return translatelist
+        return [self.filter]
                 
 
 # Optional blocks

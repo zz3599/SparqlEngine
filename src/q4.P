@@ -1,0 +1,44 @@
+
+
+result1(Product,Label,Producttype,Productfeature1,Productfeature2,P1,Producttype,Productfeature1,Productfeature3,P2) :- 
+	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
+	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Productfeature1),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Productfeature2),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', P1),
+	FilterRight0 is %x%, ?p1 > FilterRight0.
+
+
+result2(Product,Label,Producttype,Productfeature1,Productfeature2,P1,Producttype,Productfeature1,Productfeature3,P2) :- 
+	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
+	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Productfeature1),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Productfeature3),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric2>', P2),
+	FilterRight1 is %y%, ?p2 > FilterRight1.
+
+orderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, 2, OrderedBag).
+
+
+limit(_, Count, Count, Result) :- Result = [].
+limit([], _, _, Result) :- Result = [].
+limit([H|T], Counter, Limit, Result):-
+    Counter < Limit, 
+    Counter2 is Counter + 1,
+    limit(T, Counter2, Limit, Result2),
+    Result = [H|Result2]. 
+
+offset(List, Count, Count, Result) :- Result = List.
+offset([_|T], Counter, Offset, Result) :- 
+    Counter < Offset, 
+    Counter2 is Counter + 1,
+    offset(T, Counter2, Offset, Result). 
+
+query(FinalBag):-
+	bagof(query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,P1,Producttype,Productfeature1,Productfeature3,P2), query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,P1,Producttype,Productfeature1,Productfeature3,P2), ResultIntermediate),
+	orderby(ResultIntermediate, OrderedResult),
+	limit(OrderedResult, 0, 10, LimitResult),
+	offset(LimitResult, 0, 10, OffsetResult),
+	FinalBag = OffsetResult.
+
+query_intermediate(Product,Label,Producttype,Productfeature1,Productfeature2,P1,Producttype,Productfeature1,Productfeature3,P2):- result1(Product,Label,Producttype,Productfeature1,Productfeature2,P1,Producttype,Productfeature1,Productfeature3,P2); result2(Product,Label,Producttype,Productfeature1,Productfeature2,P1,Producttype,Productfeature1,Productfeature3,P2).
