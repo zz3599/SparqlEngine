@@ -1,0 +1,13 @@
+
+
+result1(Product,Label) :- 
+	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
+	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', bsbm:Product),
+	pcre:match("%word1%|%word2%|%word3%", ?label, Matchlist, 'one'), Matchlist \==[].
+
+
+query(FinalBag):-
+	bagof(query_intermediate(Product,Label), query_intermediate(Product,Label), ResultIntermediate),
+	FinalBag = ResultIntermediate.
+
+query_intermediate(Product,Label):- result1(Product,Label).

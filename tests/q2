@@ -1,3 +1,8 @@
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX dc: <http://purl.org/dc/elements/1.1>
+
 SELECT ?label ?comment ?producer ?productFeature ?propertyTextual1
 	?propertyTextual2 ?propertyTextual3 ?propertyNumeric1
 	?propertyNumeric2 ?propertyTextual4 ?propertyTextual5

@@ -1,0 +1,33 @@
+
+
+result1(Product,Label,Producttype,Productfeature1,P1,X,P3,Y,Productfeature2,Testvar) :- 
+	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
+	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
+	rdf3(Product, 'bsbm:productFeature', Productfeature1),
+	rdf3(Product, 'bsbm:productPropertyNumeric1', P1),
+	FilterRight0 is X, P1 > FilterRight0,
+	rdf3(Product, 'bsbm:productPropertyNumeric3', P3),
+	FilterRight1 is Y, P3 < FilterRight1,
+	(rdf3(Product, 'bsbm:productFeature', Productfeature2); not rdf3(Product, 'bsbm:productFeature', Productfeature2)),
+	(rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Testvar); not rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Testvar)),
+	var(?testVar).
+
+
+orderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, 2, OrderedBag).
+
+
+limit(_, Count, Count, Result) :- Result = [].
+limit([], _, _, Result) :- Result = [].
+limit([H|T], Counter, Limit, Result):-
+    Counter < Limit, 
+    Counter2 is Counter + 1,
+    limit(T, Counter2, Limit, Result2),
+    Result = [H|Result2]. 
+
+query(FinalBag):-
+	bagof(query_intermediate(Product,Label,Producttype,Productfeature1,P1,X,P3,Y,Productfeature2,Testvar), query_intermediate(Product,Label,Producttype,Productfeature1,P1,X,P3,Y,Productfeature2,Testvar), ResultIntermediate),
+	orderby(ResultIntermediate, OrderedResult),
+	limit(OrderedResult, 0, 10, LimitResult),
+	FinalBag = LimitResult.
+
+query_intermediate(Product,Label,Producttype,Productfeature1,P1,X,P3,Y,Productfeature2,Testvar):- result1(Product,Label,Producttype,Productfeature1,P1,X,P3,Y,Productfeature2,Testvar).

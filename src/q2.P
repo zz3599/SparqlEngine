@@ -1,0 +1,25 @@
+
+
+result1(Label,Comment,Producer,Productfeature,Propertytextual1,Propertytextual2,Propertytextual3,Propertynumeric1,Propertynumeric2,Propertytextual4,Propertytextual5,Propertynumeric4,Productxyz,Productxyz,Productxyz,P,Productxyz,Productxyz,F,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz) :- 
+	rdf3(Productxyz, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
+	rdf3(Productxyz, '<http://www.w3.org/2000/01/rdf-schema#comment>', Comment),
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/producer>', P),
+	rdf3(P, '<http://www.w3.org/2000/01/rdf-schema#label>', Producer),
+	rdf3(Productxyz, '<http://purl.org/dc/elements/1.1publisher>', P),
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', F),
+	rdf3(F, '<http://www.w3.org/2000/01/rdf-schema#label>', Productfeature),
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual1>', Propertytextual1),
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual2>', Propertytextual2),
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual3>', Propertytextual3),
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', Propertynumeric1),
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric2>', Propertynumeric2),
+	(rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual4>', Propertytextual4); not rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual4>', Propertytextual4)),
+	(rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual5>', Propertytextual5); not rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual5>', Propertytextual5)),
+	(rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric4>', Propertynumeric4); not rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric4>', Propertynumeric4)).
+
+
+query(FinalBag):-
+	bagof(query_intermediate(Label,Comment,Producer,Productfeature,Propertytextual1,Propertytextual2,Propertytextual3,Propertynumeric1,Propertynumeric2,Propertytextual4,Propertytextual5,Propertynumeric4,Productxyz,Productxyz,Productxyz,P,Productxyz,Productxyz,F,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz), query_intermediate(Label,Comment,Producer,Productfeature,Propertytextual1,Propertytextual2,Propertytextual3,Propertynumeric1,Propertynumeric2,Propertytextual4,Propertytextual5,Propertynumeric4,Productxyz,Productxyz,Productxyz,P,Productxyz,Productxyz,F,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz), ResultIntermediate),
+	FinalBag = ResultIntermediate.
+
+query_intermediate(Label,Comment,Producer,Productfeature,Propertytextual1,Propertytextual2,Propertytextual3,Propertynumeric1,Propertynumeric2,Propertytextual4,Propertytextual5,Propertynumeric4,Productxyz,Productxyz,Productxyz,P,Productxyz,Productxyz,F,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz):- result1(Label,Comment,Producer,Productfeature,Propertytextual1,Propertytextual2,Propertytextual3,Propertynumeric1,Propertynumeric2,Propertytextual4,Propertytextual5,Propertynumeric4,Productxyz,Productxyz,Productxyz,P,Productxyz,Productxyz,F,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz,Productxyz).

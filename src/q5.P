@@ -1,0 +1,35 @@
+
+
+result1(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220) :- 
+	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Productlabel),
+	rdf3(Productxyz, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Prodtype),
+	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Prodtype),
+	FilterRight0 is Product, Productxyz =\= FilterRight0,
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Prodfeature),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Prodfeature),
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', Origproperty1),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', Simproperty1),
+	FilterRight1 is Origproperty1150, Simproperty1 < FilterRight1FilterRight2 is Origproperty1150, Simproperty1 > FilterRight2,
+	rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric2>', Origproperty2),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric2>', Simproperty2),
+	FilterRight3 is Origproperty2220, Simproperty2 < FilterRight3FilterRight4 is Origproperty2220, Simproperty2 > FilterRight4.
+
+
+orderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, 2, OrderedBag).
+
+
+limit(_, Count, Count, Result) :- Result = [].
+limit([], _, _, Result) :- Result = [].
+limit([H|T], Counter, Limit, Result):-
+    Counter < Limit, 
+    Counter2 is Counter + 1,
+    limit(T, Counter2, Limit, Result2),
+    Result = [H|Result2]. 
+
+query(FinalBag):-
+	setof(query_intermediate(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220), query_intermediate(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220), ResultIntermediate),
+	orderby(ResultIntermediate, OrderedResult),
+	limit(OrderedResult, 0, 5, LimitResult),
+	FinalBag = LimitResult.
+
+query_intermediate(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220):- result1(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220).
