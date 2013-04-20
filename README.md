@@ -21,6 +21,11 @@ HOW TO USE
 =====
 python sparqlparser.py [inputfile]
 
+TODO 
+=======
+Order by -> requires sorting by a particular field of a structure  
+Regex match list
+
 OUTPUT
 =====
 An outputfile by the name of [inputfile].P will be created in the current dir.

@@ -4,9 +4,25 @@ result1(Product,Label,Type) :-
 	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
 	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Type).
 
+offset(List, Count, Count, List) :- !.
+offset([_|T], Counter, Offset, Result) :- 
+    Counter < Offset, 
+    Counter2 is Counter + 1,
+    offset(T, Counter2, Offset, Result). 
 
-query(FinalBag,Product,Label,Type):-
+limit(_, Count, Count, Result, Result).
+limit([], _, _, Result, Result).
+limit([H|T], Counter, Limit, Stack, Result):-
+    Counter < Limit, 
+    Counter2 is Counter + 1,
+    limit(T, Counter2, Limit, [H|Stack], Result).
+limit(List, Counter, Limit, Result):-
+    limit(List, Counter, Limit, [], Result). 
+
+query(FinalBag):-
 	bagof(query_intermediate(Product,Label,Type), query_intermediate(Product,Label,Type), ResultIntermediate),
-	FinalBag = ResultIntermediate.
+	offset(ResultIntermediate, 0, 1, OffsetResult),
+	limit(OffsetResult, 0, 2, LimitResult),
+	FinalBag = LimitResult.
 
 query_intermediate(Product,Label,Type):- result1(Product,Label,Type).

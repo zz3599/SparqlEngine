@@ -145,7 +145,7 @@ class EntireQuery(Node):
     def translate(self):
         predicates = self.header.translate() + self.mainquery.translate() + self.modifier.translate()
         parameters = str(self.mainquery.params)
-        query = '\n\nquery(FinalBag,' + ','.join(Globals.params)
+        query = '\n\nquery(FinalBag' #+ ','.join(Globals.params)
         query += '):-\n\t'
         querybody = []
         queryintermediate = None
@@ -255,13 +255,14 @@ class Limit(Node):
         return 'Limit: %s' % self.amount
     def translate(self):
         return """
-limit(_, Count, Count, Result) :- Result = [].
-limit([], _, _, Result) :- Result = [].
-limit([H|T], Counter, Limit, Result):-
+limit(_, Count, Count, Result, Result).
+limit([], _, _, Result, Result).
+limit([H|T], Counter, Limit, Stack, Result):-
     Counter < Limit, 
     Counter2 is Counter + 1,
-    limit(T, Counter2, Limit, Result2),
-    Result = [H|Result2]. """
+    limit(T, Counter2, Limit, [H|Stack], Result).
+limit(List, Counter, Limit, Result):-
+    limit(List, Counter, Limit, [], Result). """
                 
 class Offset(Node):
     fields = ['amount']
@@ -269,7 +270,7 @@ class Offset(Node):
         return 'Offset: %s' % self.amount
     def translate(self):
         return """
-offset(List, Count, Count, Result) :- Result = List.
+offset(List, Count, Count, List) :- !.
 offset([_|T], Counter, Offset, Result) :- 
     Counter < Offset, 
     Counter2 is Counter + 1,

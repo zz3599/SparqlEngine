@@ -6,3 +6,6 @@ WHERE {
 	?product rdfs:label ?label .
 	?product rdf:type ?type .
 }
+OFFSET 1
+LIMIT 2
+
