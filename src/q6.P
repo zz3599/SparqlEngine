@@ -19,10 +19,17 @@ limit([H|T], Counter, Limit, Stack, Result):-
 limit(List, Counter, Limit, Result):-
     limit(List, Counter, Limit, [], Result). 
 
+% Order by the index of the list of structures
+:- reconsult('utils.P').
+
+orderby(UnorderedBag, OrderedBag) :- quick_sort_functor(UnorderedBag, 2, OrderedBag).
+
+
 query(FinalBag):-
 	bagof(query_intermediate(Product,Label,Type), query_intermediate(Product,Label,Type), ResultIntermediate),
 	offset(ResultIntermediate, 0, 1, OffsetResult),
 	limit(OffsetResult, 0, 2, LimitResult),
-	FinalBag = LimitResult.
+	orderby(LimitResult, OrderedResult),
+	FinalBag = OrderedResult.
 
 query_intermediate(Product,Label,Type):- result1(Product,Label,Type).

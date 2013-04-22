@@ -105,7 +105,6 @@ class Condition(Node):
         for f, a in zip(self.fields, args): 
             if a[0] == '%' or a[0] == '?': # A variable needs to be capitalized
                 a = cleanVar(a)
-                print a 
                 if a not in Globals.params:
                     Globals.params.append(a)
             setattr(self, f, a)       
@@ -245,8 +244,12 @@ class OrderBy(Node):
     def __str__(self):
         return 'order by: %s' % self.field
     def translate(self):
-        return """\n\norderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, %d, OrderedBag).\n""" %(
-          Globals.entirequery.mainquery.params.params.index(self.field) + 1 
+        return """
+%% Order by the index of the list of structures
+:- reconsult('utils.P').
+
+orderby(UnorderedBag, OrderedBag) :- quick_sort_functor(UnorderedBag, %d, OrderedBag).\n""" %(
+          Globals.params.index(self.field) + 1 
         )
         
 class Limit(Node):

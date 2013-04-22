@@ -9,3 +9,4 @@ WHERE {
 OFFSET 1
 LIMIT 2
 
+ORDER BY ?label
