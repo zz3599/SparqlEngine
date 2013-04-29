@@ -17,7 +17,7 @@ $XSB_HOME is XSB root folder.
 
 HOW TO USE
 =====
-`python sparqlparser.py [relpath to inputfile]` produces Prolog source of [filename.P]  
+`python sparqlengine.py [relpath to inputfile]` produces Prolog source of [filename.P]  
 `xsb`  
 `['output.P'].` test data  
 `reconsult('[filename.P]').`  
