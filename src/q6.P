@@ -1,6 +1,6 @@
 
 
-result1(Product,Label,Type) :- 
+result1(Product,Label) :- 
 	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
 	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Type).
 
@@ -26,10 +26,10 @@ orderby(UnorderedBag, OrderedBag) :- quick_sort_functor(UnorderedBag, 2, Ordered
 
 
 query(FinalBag):-
-	bagof(query_intermediate(Product,Label,Type), query_intermediate(Product,Label,Type), ResultIntermediate),
+	bagof(query_intermediate(Product,Label), query_intermediate(Product,Label), ResultIntermediate),
 	offset(ResultIntermediate, 0, 1, OffsetResult),
 	limit(OffsetResult, 0, 2, LimitResult),
 	orderby(LimitResult, OrderedResult),
 	FinalBag = OrderedResult.
 
-query_intermediate(Product,Label,Type):- result1(Product,Label,Type).
+query_intermediate(Product,Label):- result1(Product,Label).

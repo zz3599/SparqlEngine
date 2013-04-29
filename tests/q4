@@ -6,16 +6,16 @@ SELECT ?product ?label
 	WHERE {
 	{ ?product rdfs:label ?label .
 	?product rdf:type %ProductType% .
-	?product bsbm:productFeature %ProductFeature1% .
-	?product bsbm:productFeature %ProductFeature2% .
-	?product bsbm:productPropertyNumeric1 ?p1 .
+	?product bsbm:ProductFeature %ProductFeature1% .
+	?product bsbm:ProductFeature %ProductFeature2% .
+	?product bsbm:ProductPropertyNumeric1 ?p1 .
 	FILTER ( ?p1>%x% )
 	} UNION {
 	?product rdfs:label ?label .
 	?product rdf:type %ProductType% .
-	?product bsbm:productFeature %ProductFeature1% .
-	?product bsbm:productFeature %ProductFeature3% .
-	?product bsbm:productPropertyNumeric2 ?p2 .
+	?product bsbm:ProductFeature %ProductFeature1% .
+	?product bsbm:ProductFeature %ProductFeature3% .
+	?product bsbm:ProductPropertyNumeric2 ?p2 .
 	FILTER ( ?p2 > %y% ) }
 }
 ORDER BY ?label

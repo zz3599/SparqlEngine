@@ -24,9 +24,11 @@ def applyPrefix(string):
 
 class Globals(object):
     entirequery = None
-    intermediates = 0
-    prefixes = dict()
-    params = []
+    intermediates = 0 # Filters need to have intermediate bindings
+    prefixes = dict() # Prefixes for namespaces
+    params = [] # list of parameters for result
+    boundparams = [] # List of parameters that need to be bound before querying
+    header = '' # Header, for pre-initialized asserts
 
 class Node(object):
     """Base class of AST nodes."""
@@ -106,7 +108,8 @@ class Condition(Node):
             if a[0] == '%' or a[0] == '?': # A variable needs to be capitalized
                 a = cleanVar(a)
                 if a not in Globals.params:
-                    Globals.params.append(a)
+#                    Globals.params.append(a)
+                    pass
             setattr(self, f, a)       
     def __str__(self):
         return 's: %s, p: %s, o: %s' %(self.subject, self.predicate, self.object)
@@ -144,7 +147,7 @@ class EntireQuery(Node):
     def translate(self):
         predicates = self.header.translate() + self.mainquery.translate() + self.modifier.translate()
         parameters = str(self.mainquery.params)
-        query = '\n\nquery(FinalBag' #+ ','.join(Globals.params)
+        query = '\n\nquery(FinalBag' + (',' if len(Globals.boundparams) > 0 else '') + ','.join(Globals.boundparams)
         query += '):-\n\t'
         querybody = []
         queryintermediate = None
@@ -197,10 +200,10 @@ class Filter(Node):
                 tokens = re.split("(<=|>=|==|!=|<|>)", f, 3) # Capture so we can reconstruct easily
                 filtervar0 = cleanVar(tokens[0]) # Left expression
                 filtervar = cleanVar(tokens[2]) # Right expression
-                if filtervar0 not in Globals.params:
-                    Globals.params.append(filtervar0) 
-                if filtervar not in Globals.params:
-                    Globals.params.append(filtervar) 
+                if tokens[0][0] == '%' and filtervar0 not in Globals.boundparams:
+                    Globals.boundparams.append(filtervar0) 
+                if tokens[1][0] == '%' and filtervar not in Globals.boundparams:
+                    Globals.boundparams.append(filtervar) 
                 translate = 'FilterRight%d is %s' %(Globals.intermediates, filtervar)            
                 translate += ', %s %s FilterRight%d' % (filtervar0, '=\=' if tokens[1] == '!=' else tokens[1], Globals.intermediates)
                 Globals.intermediates += 1
@@ -210,6 +213,7 @@ class Filter(Node):
             self.filter = filters
     def __str__(self):
         return '\nFilter: %s' % ('\n'.join(self.filter.split('&&') if not isinstance(self.filter, Bound) else str(self.filter)))
+        
     def translate(self):
         if isinstance(self.filter, Bound): # A filter checking that a variable is bound or not
             return [self.filter.translate()]

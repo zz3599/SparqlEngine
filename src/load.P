@@ -26,7 +26,7 @@ read_file(Stream) :-
     write(Object),write(''','''),
     write(Predicate), write(''').\n'),
 
-    assert(rdf3(Subject,Object,Predicate)),
+    %assert(rdf3(Subject,Object,Predicate)),
     
     read_file(Stream).
 

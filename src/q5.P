@@ -1,6 +1,6 @@
 
 
-result1(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220) :- 
+result1(Product,Productlabel,Productxyz,Prodtype,Prodfeature,Origproperty1,Simproperty1,Origproperty1150,Origproperty2,Simproperty2,Origproperty2220) :- 
 	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Productlabel),
 	rdf3(Productxyz, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Prodtype),
 	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Prodtype),
@@ -14,22 +14,25 @@ result1(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productx
 	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric2>', Simproperty2),
 	FilterRight3 is Origproperty2220, Simproperty2 < FilterRight3FilterRight4 is Origproperty2220, Simproperty2 > FilterRight4.
 
+% Order by the index of the list of structures
+:- reconsult('utils.P').
 
-orderby(UnorderedBag, OrderedBag) :- sortby(UnorderedBag, 2, OrderedBag).
+orderby(UnorderedBag, OrderedBag) :- quick_sort_functor(UnorderedBag, 2, OrderedBag).
 
 
-limit(_, Count, Count, Result) :- Result = [].
-limit([], _, _, Result) :- Result = [].
-limit([H|T], Counter, Limit, Result):-
+limit(_, Count, Count, Result, Result).
+limit([], _, _, Result, Result).
+limit([H|T], Counter, Limit, Stack, Result):-
     Counter < Limit, 
     Counter2 is Counter + 1,
-    limit(T, Counter2, Limit, Result2),
-    Result = [H|Result2]. 
+    limit(T, Counter2, Limit, [H|Stack], Result).
+limit(List, Counter, Limit, Result):-
+    limit(List, Counter, Limit, [], Result). 
 
 query(FinalBag):-
-	setof(query_intermediate(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220), query_intermediate(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220), ResultIntermediate),
+	setof(query_intermediate(Product,Productlabel,Productxyz,Prodtype,Prodfeature,Origproperty1,Simproperty1,Origproperty1150,Origproperty2,Simproperty2,Origproperty2220), query_intermediate(Product,Productlabel,Productxyz,Prodtype,Prodfeature,Origproperty1,Simproperty1,Origproperty1150,Origproperty2,Simproperty2,Origproperty2220), ResultIntermediate),
 	orderby(ResultIntermediate, OrderedResult),
 	limit(OrderedResult, 0, 5, LimitResult),
 	FinalBag = LimitResult.
 
-query_intermediate(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220):- result1(Product,Productlabel,Productxyz,Prodtype,Productxyz,Prodfeature,Productxyz,Origproperty1,Simproperty1,Origproperty1150,Productxyz,Origproperty2,Simproperty2,Origproperty2220).
+query_intermediate(Product,Productlabel,Productxyz,Prodtype,Prodfeature,Origproperty1,Simproperty1,Origproperty1150,Origproperty2,Simproperty2,Origproperty2220):- result1(Product,Productlabel,Productxyz,Prodtype,Prodfeature,Origproperty1,Simproperty1,Origproperty1150,Origproperty2,Simproperty2,Origproperty2220).
