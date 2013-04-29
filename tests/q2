@@ -13,15 +13,15 @@ WHERE {
 	%ProductXYZ% bsbm:producer ?p .
 	?p rdfs:label ?producer .
 	%ProductXYZ% dc:publisher ?p .
-	%ProductXYZ% bsbm:productFeature ?f .
-	?f rdfs:label ?productFeature .
-	%ProductXYZ% bsbm:productPropertyTextual1 ?propertyTextual1 .
-	%ProductXYZ% bsbm:productPropertyTextual2 ?propertyTextual2 .
-	%ProductXYZ% bsbm:productPropertyTextual3 ?propertyTextual3 .
-	%ProductXYZ% bsbm:productPropertyNumeric1 ?propertyNumeric1 .
-	%ProductXYZ% bsbm:productPropertyNumeric2 ?propertyNumeric2 .
-	OPTIONAL { %ProductXYZ% bsbm:productPropertyTextual4 ?propertyTextual4 . }
-	OPTIONAL { %ProductXYZ% bsbm:productPropertyTextual5 ?propertyTextual5 . }
-	OPTIONAL { %ProductXYZ% bsbm:productPropertyNumeric4 ?propertyNumeric4 .}
+	%ProductXYZ% bsbm:productfeature ?f .
+	?f rdfs:label ?productfeature .
+	%ProductXYZ% bsbm:productpropertytextual1 ?propertyTextual1 .
+	%ProductXYZ% bsbm:productpropertytextual2 ?propertyTextual2 .
+	%ProductXYZ% bsbm:productpropertytextual3 ?propertyTextual3 .
+	%ProductXYZ% bsbm:productpropertynumeric1 ?propertyNumeric1 .
+	%ProductXYZ% bsbm:productpropertynumeric2 ?propertyNumeric2 .
+	OPTIONAL { %ProductXYZ% bsbm:productpropertytextual4 ?propertyTextual4 . }
+	OPTIONAL { %ProductXYZ% bsbm:productpropertytextual5 ?propertyTextual5 . }
+	OPTIONAL { %ProductXYZ% bsbm:productpropertynumeric4 ?propertyNumeric4 .}
 	
 }

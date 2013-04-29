@@ -7,6 +7,6 @@ WHERE {
 	?product rdf:type ?type .
 }
 OFFSET 1
-LIMIT 2
+LIMIT 5
 
 ORDER BY ?label

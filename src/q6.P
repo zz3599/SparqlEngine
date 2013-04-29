@@ -28,7 +28,7 @@ orderby(UnorderedBag, OrderedBag) :- quick_sort_functor(UnorderedBag, 2, Ordered
 query(FinalBag):-
 	bagof(query_intermediate(Product,Label), query_intermediate(Product,Label), ResultIntermediate),
 	offset(ResultIntermediate, 0, 1, OffsetResult),
-	limit(OffsetResult, 0, 2, LimitResult),
+	limit(OffsetResult, 0, 5, LimitResult),
 	orderby(LimitResult, OrderedResult),
 	FinalBag = OrderedResult.
 
