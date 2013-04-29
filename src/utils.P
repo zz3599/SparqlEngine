@@ -175,8 +175,9 @@ get_byte(-1).
 
 % Binding for the rdf data.
 bind_rdf([H|T], S, O, P) :- 
-    S = H, bind_rdf_O(T, O, Rest), P = Rest.
+    S = H, bind_rdf_O(T, O, Rest), bind_rdf_P(Rest, P, _).
 bind_rdf_O([H|Rest], O, Rest) :- O = H. % assign object
+bind_rdf_P([H|Rest], P, _) :- P = H. % assign predicate
 
 
 

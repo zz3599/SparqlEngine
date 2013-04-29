@@ -1,13 +1,12 @@
 
 
-result1(Product,Label,Value1,X) :- 
+result1(Product,Label) :- 
 	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
-	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Productfeature1),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature>', Productfeature2),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1>', Value1),
-	FilterRight0 is X, Value1 > FilterRight0,
-	(rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual4>', Propertytextual4); not rdf3(Productxyz, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyTextual4>', Propertytextual4)).
+	val(producttype, Producttype),rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
+	val(productfeature1, Productfeature1),rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature1),
+	val(productfeature2, Productfeature2),rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature2),
+	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productpropertynumeric1>', Value1),
+	val(x, FilterRight0) , Value1 @> FilterRight0.
 
 % Order by the index of the list of structures
 :- reconsult('utils.P').
@@ -24,10 +23,14 @@ limit([H|T], Counter, Limit, Stack, Result):-
 limit(List, Counter, Limit, Result):-
     limit(List, Counter, Limit, [], Result). 
 
-query(FinalBag):-
-	setof(query_intermediate(Product,Label,Value1,X), query_intermediate(Product,Label,Value1,X), ResultIntermediate),
+query(FinalBag,Producttype,Productfeature1,Productfeature2,X):-
+	assert(val(producttype, Producttype)),
+	assert(val(productfeature1, Productfeature1)),
+	assert(val(productfeature2, Productfeature2)),
+	assert(val(x, X)),
+	setof(query_intermediate(Product,Label), query_intermediate(Product,Label), ResultIntermediate),
 	orderby(ResultIntermediate, OrderedResult),
 	limit(OrderedResult, 0, 10, LimitResult),
 	FinalBag = LimitResult.
 
-query_intermediate(Product,Label,Value1,X):- result1(Product,Label,Value1,X).
+query_intermediate(Product,Label):- result1(Product,Label).

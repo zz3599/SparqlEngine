@@ -2,26 +2,32 @@
 
 result1(Product,Label) :- 
 	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
-	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature1),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature2),
+	val(producttype, Producttype),rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
+	val(productfeature1, Productfeature1),rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature1),
+	val(productfeature2, Productfeature2),rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature2),
 	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productpropertynumeric1>', P1),
-	FilterRight0 is X, P1 > FilterRight0.
+	val(x, FilterRight0) , P1 @> FilterRight0.
 
 
 result2(Product,Label) :- 
 	rdf3(Product, '<http://www.w3.org/2000/01/rdf-schema#label>', Label),
-	rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature1),
-	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature3),
+	val(producttype, Producttype),rdf3(Product, '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', Producttype),
+	val(productfeature1, Productfeature1),rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature1),
+	val(productfeature3, Productfeature3),rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productfeature>', Productfeature3),
 	rdf3(Product, '<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productpropertynumeric2>', P2),
-	FilterRight1 is Y, P2 > FilterRight1.
+	val(y, FilterRight1) , P2 @> FilterRight1.
 
 % Order by the index of the list of structures
 :- reconsult('utils.P').
 
 orderby(UnorderedBag, OrderedBag) :- quick_sort_functor(UnorderedBag, 2, OrderedBag).
 
+
+offset(List, Count, Count, List) :- !.
+offset([_|T], Counter, Offset, Result) :- 
+    Counter < Offset, 
+    Counter2 is Counter + 1,
+    offset(T, Counter2, Offset, Result). 
 
 limit(_, Count, Count, Result, Result).
 limit([], _, _, Result, Result).
@@ -32,17 +38,17 @@ limit([H|T], Counter, Limit, Stack, Result):-
 limit(List, Counter, Limit, Result):-
     limit(List, Counter, Limit, [], Result). 
 
-offset(List, Count, Count, List) :- !.
-offset([_|T], Counter, Offset, Result) :- 
-    Counter < Offset, 
-    Counter2 is Counter + 1,
-    offset(T, Counter2, Offset, Result). 
-
-query(FinalBag):-
+query(FinalBag,Producttype,Productfeature1,Productfeature2,X,Productfeature3,Y):-
+	assert(val(producttype, Producttype)),
+	assert(val(productfeature1, Productfeature1)),
+	assert(val(productfeature2, Productfeature2)),
+	assert(val(x, X)),
+	assert(val(productfeature3, Productfeature3)),
+	assert(val(y, Y)),
 	bagof(query_intermediate(Product,Label), query_intermediate(Product,Label), ResultIntermediate),
 	orderby(ResultIntermediate, OrderedResult),
-	limit(OrderedResult, 0, 10, LimitResult),
-	offset(LimitResult, 0, 10, OffsetResult),
-	FinalBag = OffsetResult.
+	offset(OrderedResult, 0, 10, OffsetResult),
+	limit(OffsetResult, 0, 10, LimitResult),
+	FinalBag = LimitResult.
 
 query_intermediate(Product,Label):- result1(Product,Label); result2(Product,Label).

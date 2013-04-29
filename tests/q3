@@ -1,3 +1,4 @@
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX dc: <http://purl.org/dc/elements/1.1>
@@ -6,16 +7,16 @@ SELECT ?product ?label
 WHERE {
 	?product rdfs:label ?label .
 	?product rdf:type %ProductType% .
-	?product bsbm:productFeature %ProductFeature1% .
-	?product bsbm:productPropertyNumeric1 ?p1 .
+	?product bsbm:productfeature %ProductFeature1% .
+	?product bsbm:productpropertynumeric1 ?p1 .
 	FILTER ( ?p1 > %x% )
-	?product bsbm:productPropertyNumeric3 ?p3 .
+	?product bsbm:productpropertynumeric3 ?p3 .
 	FILTER (?p3 < %y% )
 	OPTIONAL {
-		?product bsbm:productFeature %ProductFeature2% .
+		?product bsbm:productfeature %ProductFeature2% .
 		?product rdfs:label ?testVar . 
 	}
-	FILTER ( !bound(?testVar ) ) 
+	FILTER ( bound(?testVar ) ) 
 }
 ORDER BY ?label
 LIMIT 10

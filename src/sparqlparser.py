@@ -9,7 +9,7 @@ import re
 
 # Remove non-chars at the beginning, and put the first character to uppercase
 def cleanVar(var):
-    return re.sub("\W+", "", var).title()
+    return re.sub("[^\w\-\+\*\/]+", "", var).title()
 
 # Applies a prefix to a given string
 def applyPrefix(string):
@@ -28,7 +28,7 @@ class Globals(object):
     prefixes = dict() # Prefixes for namespaces
     params = [] # list of parameters for result
     boundparams = [] # List of parameters that need to be bound before querying
-    header = '' # Header, for pre-initialized asserts
+    alreadyboundparams = [] # list of parameters already bound to a variable in the scope of the current predicate
 
 class Node(object):
     """Base class of AST nodes."""
@@ -99,25 +99,39 @@ class BodyUnion(Node):
     def __str__(self):
         return '\nBody block 1:\n' + str(self.body1) + '\nBody Block 2:\n' + str(self.body2)
     def translate(self):
-        return [self.body1.translate(),self.body2.translate()]
+        result = [self.body1.translate()]
+        Globals.alreadyboundparams = [] # Bounded variables need to be re-bound in another subquery
+        result.append(self.body2.translate())
+        return result
     
 class Condition(Node):
     fields = ['subject', 'predicate', 'object']
     def __init__(self, *args):
         for f, a in zip(self.fields, args): 
-            if a[0] == '%' or a[0] == '?': # A variable needs to be capitalized
+            if a[0] == '?': 
                 a = cleanVar(a)
-                if a not in Globals.params:
-#                    Globals.params.append(a)
-                    pass
+            if a[0] == '%': # An already bound variable
+                a = cleanVar(a)
+                if a not in Globals.boundparams:
+                    Globals.boundparams.append(a)
+
             setattr(self, f, a)       
     def __str__(self):
         return 's: %s, p: %s, o: %s' %(self.subject, self.predicate, self.object)
     def translate(self):
+        result = ''
+        if self.subject in Globals.boundparams and self.subject not in Globals.alreadyboundparams: 
+            result += 'val(%s, %s),' %(self.subject.lower(), self.subject)
+            Globals.alreadyboundparams.append(self.subject)
+        if self.object in Globals.boundparams and self.object not in Globals.alreadyboundparams: 
+            result += 'val(%s, %s),' %(self.object.lower(), self.object)
+            Globals.alreadyboundparams.append(self.object)
         self.subject = applyPrefix(self.subject)
         self.predicate = applyPrefix(self.predicate)
         self.object = applyPrefix(self.object)
-        return "rdf3(%s, '%s', %s)" %(self.subject, self.predicate, self.object)
+        result += "rdf3(%s, '%s', %s)" %(self.subject, self.predicate, self.object)
+
+        return result
 
 class MainQuery(Node):
     fields = ['type', 'params', 'body']
@@ -150,13 +164,16 @@ class EntireQuery(Node):
         query = '\n\nquery(FinalBag' + (',' if len(Globals.boundparams) > 0 else '') + ','.join(Globals.boundparams)
         query += '):-\n\t'
         querybody = []
+        for boundparams in Globals.boundparams: # We cannot use this parameter in bagof, so assert it
+            newassert = 'assert(val(%s, %s))' %(boundparams.lower(), boundparams)
+            querybody.append(newassert)
         queryintermediate = None
         if isinstance(self.mainquery.body, BodyUnion):
             queryintermediate = '\n\nquery_intermediate(%s):- result1(%s); result2(%s).' % (parameters, parameters, parameters)
         else:
             queryintermediate = '\n\nquery_intermediate(%s):- result1(%s).' % (parameters, parameters)
             pass
-        querybody.append('%s(query_intermediate(%s), query_intermediate(%s), ResultIntermediate)'% ('setof' if self.mainquery.params.distinct else 'bagof', parameters, parameters))
+        querybody.append('%s(query_intermediate(%s), query_intermediate(%s), ResultIntermediate)'% ('setof' if self.mainquery.params.distinct else 'bagof', parameters, parameters)) # Bagof always produces overflow. Try smaller datasets 
         currentResult = "ResultIntermediate"
         for modifier in self.modifier.modifierlist:
             if isinstance(modifier, OrderBy):
@@ -175,10 +192,15 @@ class EntireQuery(Node):
 
 class Regex(Node):
     fields = ['property', 'regex']
+    def __init__(self, prop, regex):
+        self.property = cleanVar(prop)
+        self.regex = regex
+        # Extract variables from regex
+        
     def __str__(self):
         return 'property: %s, regex: %s' %(self.property, self.regex)
     def translate(self):
-        return """pcre:match(%s, %s, Matchlist, 'one'), Matchlist \==[]""" %(self.regex, cleanVar(self.property))
+        return """pcre:match(%s, %s, Matchlist, 'one'), Matchlist \==[]""" %(self.regex, self.property)
 
 class Bound(Node):
     fields = ['bound', 'variable']
@@ -186,9 +208,9 @@ class Bound(Node):
         return '\n%sbound: %s\n' % ('not' if bool('!bound' == self.bound) else '', self.variable)
     def translate(self):
         if self.bound == '!bound':
-            return 'var(%s)' % self.variable
+            return 'var(%s)' % cleanVar(self.variable)
         else :
-            return 'nonvar(%s)' % self.variable 
+            return 'nonvar(%s)' % cleanVar(self.variable)
     
 class Filter(Node):
     fields = ['filter'] # Filter could be a string or a bound
@@ -200,12 +222,19 @@ class Filter(Node):
                 tokens = re.split("(<=|>=|==|!=|<|>)", f, 3) # Capture so we can reconstruct easily
                 filtervar0 = cleanVar(tokens[0]) # Left expression
                 filtervar = cleanVar(tokens[2]) # Right expression
+                bounded = False
                 if tokens[0][0] == '%' and filtervar0 not in Globals.boundparams:
                     Globals.boundparams.append(filtervar0) 
-                if tokens[1][0] == '%' and filtervar not in Globals.boundparams:
+                    bounded = True
+                if tokens[2][0] == '%' and filtervar not in Globals.boundparams:
                     Globals.boundparams.append(filtervar) 
-                translate = 'FilterRight%d is %s' %(Globals.intermediates, filtervar)            
-                translate += ', %s %s FilterRight%d' % (filtervar0, '=\=' if tokens[1] == '!=' else tokens[1], Globals.intermediates)
+                    bounded = True
+                if bounded: 
+                    translate = 'val(%s, FilterRight%d) ' %(filtervar.lower(), Globals.intermediates)            
+                    translate += ', %s %s FilterRight%d' % (filtervar0, '=\=' if tokens[1] == '!=' else '@' + tokens[1], Globals.intermediates)
+                else : 
+                    translate = 'FilterRight%d is %s' %(Globals.intermediates, filtervar)            
+                    translate += ', %s %s FilterRight%d' % (filtervar0, '=\=' if tokens[1] == '!=' else '@' + tokens[1], Globals.intermediates)
                 Globals.intermediates += 1
                 filterstring += translate
             self.filter = filterstring
@@ -339,14 +368,13 @@ try:
     prog = open(sys.argv[1]).read()
     parser = Parser()
     Globals.entirequery = parser(prog)
-    #print('----------------PARSETREE---------------------------------------')
+
     print('---------------TRANSLATION-----------------------------------------')
     translation = Globals.entirequery.translate()
     outfile = os.path.basename(sys.argv[1]) + ".P"
     f = open(outfile, 'w+')
     f.write(translation)
-#    print(translation)
- #   print outfile
+
     f.close()
 
 except tpg.Error:
